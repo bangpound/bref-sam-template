@@ -1,0 +1,16 @@
+{
+  "project_name": "SAM Bref template",
+  "project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '_') }}",
+  "author": "Anonymous",
+  "runtime": "provided.al2",
+  "architectures": {
+    "value": [
+      "x86_64",
+      "arm64"
+    ]
+  },
+  "_copy_without_render": [
+    "composer.json"
+  ],
+  "__stack_name": "{{ cookiecutter.project_name.lower().replace(' ', '-') }}"
+}
