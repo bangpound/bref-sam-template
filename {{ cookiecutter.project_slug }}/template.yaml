@@ -10,6 +10,20 @@ Globals:
   Function:
     Timeout: 3
 
+Parameters:
+  PhpLayer:
+    Type: String
+    Description: PHP layer ARN
+    Default: arn:aws:lambda:{{ cookiecutter.aws_region }}:534081306603:layer:{{ bref_php_layer_name(cookiecutter.architectures.value, cookiecutter.php_version) }}:{{ bref_layer_version(cookiecutter._bref_layers, bref_php_layer_name(cookiecutter.architectures.value, cookiecutter.php_version), cookiecutter.aws_region) }}
+  PhpFpmLayer:
+    Type: String
+    Description: PHP FPM layer ARN
+    Default: arn:aws:lambda:{{ cookiecutter.aws_region }}:534081306603:layer:{{ bref_php_layer_name(cookiecutter.architectures.value, cookiecutter.php_version, 'fpm') }}:{{ bref_layer_version(cookiecutter._bref_layers, bref_php_layer_name(cookiecutter.architectures.value, cookiecutter.php_version, 'fpm'), cookiecutter.aws_region) }}
+  ConsoleLayer:
+    Type: String
+    Description: Console layer ARN
+    Default: arn:aws:lambda:{{ cookiecutter.aws_region }}:534081306603:layer:console:{{ cookiecutter._bref_layers['console'][cookiecutter.aws_region] }}
+
 Resources:
   ConsoleFunction:
     Type: AWS::Serverless::Function
@@ -19,9 +33,8 @@ Resources:
       Handler: bin/console
       Runtime: {{ cookiecutter.runtime | tojson }}
       Layers:
-      {%- for layer in cookiecutter.__layers.value %}
-        - {{ layer }}
-      {%- endfor %}
+        - !Ref PhpLayer
+        - !Ref ConsoleLayer
       {%- if cookiecutter.architectures.value != [] %}
       Architectures:
       {%- for arch in cookiecutter.architectures.value %}
@@ -37,12 +50,8 @@ Resources:
       CodeUri: .
       Handler: public/index.php
       Runtime: {{ cookiecutter.runtime | tojson }}
-      {%- if cookiecutter.__layers.value != [] %}
       Layers:
-      {%- for layer in cookiecutter.__layers.value %}
-        - {{ layer }}
-      {%- endfor %}
-      {%- endif %}
+        - !Ref PhpFpmLayer
       {%- if cookiecutter.architectures.value != [] %}
       Architectures:
       {%- for arch in cookiecutter.architectures.value %}

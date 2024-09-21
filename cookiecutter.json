@@ -8,16 +8,19 @@
       "arm64"
     ]
   },
-  "php_version": [],
-  "aws_region": [],
+  "php_version": [
+    "83",
+    "80",
+    "81",
+    "82"
+  ],
+  "aws_region": "{{ cookiecutter.aws_region }}",
   "_bref_layers": {},
-  "__layers": {
-    "value": [
-      "arn:aws:lambda:{{ cookiecutter.aws_region }}:534081306603:layer:{{ cookiecutter.php_version }}:{{ cookiecutter._bref_layers[cookiecutter.php_version][cookiecutter.aws_region] }}"
-    ]
-  },
   "_copy_without_render`": [
     "composer.json"
   ],
-  "__stack_name": "{{ cookiecutter.project_name.lower().replace(' ', '-') }}"
+  "__stack_name": "{{ cookiecutter.project_name.lower().replace(' ', '-') }}",
+  "_extensions": [
+    "extensions.bref_layers.BrefLayersExtension"
+  ]
 }
