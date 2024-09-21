@@ -16,10 +16,14 @@ set -o pipefail
 args=("$@")
 event=$(jq --compact-output --null-input --args '$ARGS.positional | @sh' -- "${args[@]}")
 
+# Extracted jq command for readability
+# shellcheck disable=SC2016
+JQ_COMMAND='(.Payload | fromjson) as $x | $x.output // "\($x.errorType)\n\n\($x.errorMessage)\n\n* \($x.stackTrace | join("\n* "))"'
+
 sam remote invoke \
   ConsoleFunction \
   --parameter InvocationType="RequestResponse" \
   --parameter LogType="None" \
   --output json \
   --event "${event}" |
-    jq --raw-output '.Payload | fromjson | .output'
+    jq --raw-output "${JQ_COMMAND}"
