@@ -12,8 +12,10 @@ class BrefLayersExtension(Extension):
         """Initialize the extension with the given environment."""
         super().__init__(environment)
 
-        def bref_php_layer_name(archs, php_version, variant=None):
-            return f"{'arm-' if archs[0] == 'arm64' else ''}php-{php_version}{'-fpm' if variant == 'fpm' else ''}"
+        def bref_php_layer_name(archs, php_version, suffix=None):
+            cpu_prefix = "arm-" if archs[0] == "arm64" else ""
+            name_suffix = f"{'-' + suffix if suffix is not None else ''}"
+            return f"{cpu_prefix}php-{php_version}{name_suffix}"
 
         def bref_layer_version(layers, layer_name, aws_region):
             return layers[layer_name][aws_region]

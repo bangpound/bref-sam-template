@@ -1,27 +1,27 @@
 import sys
 import subprocess
-import logging
 
-logger = logging.getLogger(__name__)
+COMPOSER_COMMAND = ["composer", "create-project", "--no-interaction"]
 
 
-def run_composer_install() -> bool:
-    try:
-        proc = subprocess.run(
-            ["composer", "create-project", "--no-interaction"],
-            capture_output=True,
-            check=True,
-        )
-        print(proc.stderr.decode(), end="", file=sys.stderr)
-        print(proc.stdout.decode(), end="")
-        return True
-    except subprocess.CalledProcessError as e:
-        print(e.stderr.decode(), end="", file=sys.stderr)
-        print(e.stdout.decode(), end="")
-    return False
+def check_process_status(proc: subprocess.Popen) -> bool:
+    retcode = proc.poll()
+    if retcode is not None:
+        return retcode == 0
+
+
+def run_composer_create_project() -> bool:
+    with subprocess.Popen(
+        COMPOSER_COMMAND,
+        stdout=sys.stdout,
+        stderr=sys.stderr,
+    ) as proc:
+        while check_process_status(proc) is None:
+            pass
+        return check_process_status(proc)
 
 
 if __name__ == "__main__":
-    if not run_composer_install():
+    if not run_composer_create_project():
         print("ERROR: Composer failed.")
         sys.exit(1)
