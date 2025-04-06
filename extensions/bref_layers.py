@@ -1,7 +1,5 @@
 """Jinja2 extensions."""
 
-import json
-
 from jinja2.ext import Extension
 
 
