@@ -9,10 +9,11 @@
     ]
   },
   "php_version": [
-    "83",
+    "84",
     "80",
     "81",
-    "82"
+    "82",
+    "83"
   ],
   "aws_region": "{{ cookiecutter.aws_region }}",
   "_bref_layers": {},
