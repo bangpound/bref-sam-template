@@ -28,6 +28,7 @@
             "symfony/flex": true,
             "symfony/runtime": true
         },
+        "bump-after-update": true,
         "sort-packages": true
     },
     "autoload": {
@@ -66,7 +67,7 @@
     "extra": {
         "symfony": {
             "allow-contrib": false,
-            "require": "7.2.*"
+            "require": "7.3.*"
         }
     }
 }
