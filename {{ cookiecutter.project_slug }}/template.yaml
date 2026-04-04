@@ -9,6 +9,14 @@ Description: >
 Globals:
   Function:
     Timeout: 3
+    Runtime: {{ cookiecutter.runtime | tojson }}
+    MemorySize: 1024
+    CodeUri: .
+    Environment:
+      Variables:
+        APP_ENV: prod
+    Layers:
+      - !Ref PhpLayer
 
 Parameters:
   PhpLayer:
@@ -17,38 +25,14 @@ Parameters:
     Default: arn:aws:lambda:{{ cookiecutter.aws_region }}:873528684822:layer:{{ bref_php_layer_name(cookiecutter.architectures.value, cookiecutter.php_version) }}:{{ bref_layer_version(cookiecutter._bref_layers, bref_php_layer_name(cookiecutter.architectures.value, cookiecutter.php_version), cookiecutter.aws_region) }}
 
 Resources:
-  ConsoleFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Timeout: 900
-      CodeUri: .
-      Handler: bin/console
-      Runtime: {{ cookiecutter.runtime | tojson }}
-      Layers:
-        - !Ref PhpLayer
-      Environment:
-        Variables:
-          BREF_RUNTIME: console
-      {%- if cookiecutter.architectures.value != [] %}
-      Architectures:
-      {%- for arch in cookiecutter.architectures.value %}
-        - {{ arch }}
-      {%- endfor %}
-      {%- endif %}
-    Metadata:
-      BuildMethod: makefile
-
-  HelloWorldFunction:
+  WebFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
-      CodeUri: .
       Handler: public/index.php
-      Runtime: {{ cookiecutter.runtime | tojson }}
-      Layers:
-        - !Ref PhpLayer
+      Timeout: 28
       Environment:
         Variables:
-          BREF_RUNTIME: fpm
+          BREF_RUNTIME: 'Bref\FpmRuntime\Main'
       {%- if cookiecutter.architectures.value != [] %}
       Architectures:
       {%- for arch in cookiecutter.architectures.value %}
@@ -56,24 +40,51 @@ Resources:
       {%- endfor %}
       {%- endif %}
       Events:
-        HelloWorld:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-          Properties:
-            Path: /hello
-            Method: get
+        DefaultRoute:
+          Type: HttpApi # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
     Metadata:
       BuildMethod: makefile
+
+  ConsoleFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: bin/console
+      Timeout: 120
+      Environment:
+        Variables:
+          BREF_RUNTIME: 'Bref\ConsoleRuntime\Main'
+      {%- if cookiecutter.architectures.value != [] %}
+      Architectures:
+      {%- for arch in cookiecutter.architectures.value %}
+        - {{ arch }}
+      {%- endfor %}
+      {%- endif %}
+    Metadata:
+      BuildMethod: makefile
+
+  WebLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${WebFunction}"
+
+  ConsoleLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${ConsoleFunction}"
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  HelloWorldApi:
-    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  HelloWorldFunction:
-    Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt HelloWorldFunction.Arn
-  HelloWorldFunctionIamRole:
-    Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt HelloWorldFunctionRole.Arn
+  WebFunctionArn:
+    Description: Current Lambda function version
+    Value: !GetAtt WebFunction.Arn
+  ConsoleFunctionArn:
+    Description: Current Lambda function version
+    Value: !GetAtt ConsoleFunction.Arn
+  HttpApiId:
+    Description: Id of the HTTP API
+    Value: !Ref HttpApi
+  HttpApiUrl:
+    Description: URL of the HTTP API
+    Value: !Sub 'https://${HttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}'
