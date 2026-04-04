@@ -43,10 +43,23 @@ The generated Symfony project (`{{ cookiecutter.project_slug }}/`) contains:
 - The `_bref_layers` field in `cookiecutter.json` is empty by default — `hooks/pre_prompt.py` fetches and injects the real data from the Bref repo before the template is rendered.
 - `composer.json` is listed in `_copy_without_render` (note: the key has a backtick typo — `_copy_without_render\`` ) to prevent Jinja2 from processing its contents.
 
+## Running Tests
+
+Always use `uv` to run tests — never use `python` or `pip` directly:
+
+```bash
+uv run python -m unittest discover -s tests -v
+```
+
+Install dev dependencies:
+```bash
+uv sync --group dev
+```
+
 ## Updating the Bref Version
 
-The Bref tag is hardcoded in `hooks/pre_prompt.py` line 51:
+The Bref tag is hardcoded in `hooks/pre_prompt.py`:
 ```python
-populate_layer_choices("refs/tags/2.4.1")
+populate_layer_choices("refs/tags/3.0.1")
 ```
 Update this tag when upgrading to a new Bref release.

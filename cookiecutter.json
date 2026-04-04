@@ -11,10 +11,8 @@
   "php_version": [
     "85",
     "84",
-    "80",
-    "81",
-    "82",
-    "83"
+    "83",
+    "82"
   ],
   "aws_region": "{{ cookiecutter.aws_region }}",
   "_bref_layers": {},

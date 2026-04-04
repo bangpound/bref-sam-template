@@ -33,7 +33,7 @@ def populate_layer_choices(ref: str) -> None:
     :return: None
     """
     layer_url = f"https://raw.githubusercontent.com/brefphp/bref/{ref}/layers.json"
-    with urllib.request.urlopen(layer_url) as response:
+    with urllib.request.urlopen(layer_url) as response:  # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected
         layers = json.load(response)
 
     cookiecutter_json_path = os.path.join(os.getcwd(), "cookiecutter.json")
@@ -48,7 +48,7 @@ def populate_layer_choices(ref: str) -> None:
 
 
 if __name__ == "__main__":
-    populate_layer_choices("refs/tags/2.4.1")
+    populate_layer_choices("refs/tags/3.0.1")
     if not _composer_is_installed():
         print("ERROR: Composer is not installed.")
         sys.exit(1)

@@ -15,14 +15,6 @@ Parameters:
     Type: String
     Description: PHP layer ARN
     Default: arn:aws:lambda:{{ cookiecutter.aws_region }}:873528684822:layer:{{ bref_php_layer_name(cookiecutter.architectures.value, cookiecutter.php_version) }}:{{ bref_layer_version(cookiecutter._bref_layers, bref_php_layer_name(cookiecutter.architectures.value, cookiecutter.php_version), cookiecutter.aws_region) }}
-  PhpFpmLayer:
-    Type: String
-    Description: PHP FPM layer ARN
-    Default: arn:aws:lambda:{{ cookiecutter.aws_region }}:873528684822:layer:{{ bref_php_layer_name(cookiecutter.architectures.value, cookiecutter.php_version, 'fpm') }}:{{ bref_layer_version(cookiecutter._bref_layers, bref_php_layer_name(cookiecutter.architectures.value, cookiecutter.php_version, 'fpm'), cookiecutter.aws_region) }}
-  ConsoleLayer:
-    Type: String
-    Description: Console layer ARN
-    Default: arn:aws:lambda:{{ cookiecutter.aws_region }}:873528684822:layer:console:{{ cookiecutter._bref_layers['console'][cookiecutter.aws_region] }}
 
 Resources:
   ConsoleFunction:
@@ -34,7 +26,9 @@ Resources:
       Runtime: {{ cookiecutter.runtime | tojson }}
       Layers:
         - !Ref PhpLayer
-        - !Ref ConsoleLayer
+      Environment:
+        Variables:
+          BREF_RUNTIME: console
       {%- if cookiecutter.architectures.value != [] %}
       Architectures:
       {%- for arch in cookiecutter.architectures.value %}
@@ -51,7 +45,10 @@ Resources:
       Handler: public/index.php
       Runtime: {{ cookiecutter.runtime | tojson }}
       Layers:
-        - !Ref PhpFpmLayer
+        - !Ref PhpLayer
+      Environment:
+        Variables:
+          BREF_RUNTIME: fpm
       {%- if cookiecutter.architectures.value != [] %}
       Architectures:
       {%- for arch in cookiecutter.architectures.value %}

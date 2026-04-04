@@ -11,12 +11,16 @@ sys.path.insert(0, PROJECT_ROOT)
 
 from cookiecutter.generate import generate_files
 
+# Bref 3.0: single unified layer per PHP version, no -fpm or console suffixes
 BREF_LAYERS = {
-    "arm-php-85-fpm": {"us-east-1": 11},
     "arm-php-85": {"us-east-1": 22},
-    "console": {"us-east-1": 33},
-    "php-85-fpm": {"us-east-1": 44},
+    "arm-php-84": {"us-east-1": 23},
+    "arm-php-83": {"us-east-1": 24},
+    "arm-php-82": {"us-east-1": 25},
     "php-85": {"us-east-1": 55},
+    "php-84": {"us-east-1": 56},
+    "php-83": {"us-east-1": 57},
+    "php-82": {"us-east-1": 58},
 }
 
 CONTEXT = {
@@ -46,6 +50,10 @@ class TestProjectCreation(unittest.TestCase):
     def _path(self, *parts):
         return os.path.join(self.project, *parts)
 
+    def _load_template_yaml(self):
+        with open(self._path("template.yaml")) as f:
+            return _cfn_load(f.read())
+
     # --- File presence ---
 
     def test_template_yaml_exists(self):
@@ -71,33 +79,38 @@ class TestProjectCreation(unittest.TestCase):
     # --- template.yaml structure ---
 
     def test_template_yaml_has_hello_world_function(self):
-        with open(self._path("template.yaml")) as f:
-            doc = _cfn_load(f.read())
-        self.assertIn("HelloWorldFunction", doc["Resources"])
+        self.assertIn("HelloWorldFunction", self._load_template_yaml()["Resources"])
 
     def test_template_yaml_has_console_function(self):
-        with open(self._path("template.yaml")) as f:
-            doc = _cfn_load(f.read())
-        self.assertIn("ConsoleFunction", doc["Resources"])
+        self.assertIn("ConsoleFunction", self._load_template_yaml()["Resources"])
 
     def test_hello_world_has_api_event(self):
-        with open(self._path("template.yaml")) as f:
-            doc = _cfn_load(f.read())
-        events = doc["Resources"]["HelloWorldFunction"]["Properties"]["Events"]
+        events = self._load_template_yaml()["Resources"]["HelloWorldFunction"]["Properties"]["Events"]
         self.assertIn("HelloWorld", events)
 
     def test_console_function_timeout_is_900(self):
-        with open(self._path("template.yaml")) as f:
-            doc = _cfn_load(f.read())
-        timeout = doc["Resources"]["ConsoleFunction"]["Properties"]["Timeout"]
+        timeout = self._load_template_yaml()["Resources"]["ConsoleFunction"]["Properties"]["Timeout"]
         self.assertEqual(timeout, 900)
 
     def test_both_functions_use_makefile_build(self):
-        with open(self._path("template.yaml")) as f:
-            doc = _cfn_load(f.read())
+        doc = self._load_template_yaml()
         for fn in ("HelloWorldFunction", "ConsoleFunction"):
             method = doc["Resources"][fn]["Metadata"]["BuildMethod"]
             self.assertEqual(method, "makefile", f"{fn} BuildMethod is not makefile")
+
+    def test_only_php_layer_parameter_exists(self):
+        params = self._load_template_yaml()["Parameters"]
+        self.assertIn("PhpLayer", params)
+        self.assertNotIn("PhpFpmLayer", params)
+        self.assertNotIn("ConsoleLayer", params)
+
+    def test_hello_world_uses_bref_runtime_fpm(self):
+        env = self._load_template_yaml()["Resources"]["HelloWorldFunction"]["Properties"]["Environment"]["Variables"]
+        self.assertEqual(env["BREF_RUNTIME"], "fpm")
+
+    def test_console_uses_bref_runtime_console(self):
+        env = self._load_template_yaml()["Resources"]["ConsoleFunction"]["Properties"]["Environment"]["Variables"]
+        self.assertEqual(env["BREF_RUNTIME"], "console")
 
     # --- .gitignore ---
 
