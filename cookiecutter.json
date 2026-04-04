@@ -1,7 +1,7 @@
 {
   "project_name": "SAM Bref template",
   "project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '_') }}",
-  "runtime": "provided.al2",
+  "runtime": "provided.al2023",
   "architectures": {
     "value": [
       "x86_64",
