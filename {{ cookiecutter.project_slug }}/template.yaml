@@ -84,7 +84,7 @@ Outputs:
     Value: !GetAtt ConsoleFunction.Arn
   HttpApiId:
     Description: Id of the HTTP API
-    Value: !Ref HttpApi
+    Value: !Ref ServerlessHttpApi
   HttpApiUrl:
     Description: URL of the HTTP API
-    Value: !Sub 'https://${HttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}'
+    Value: !Sub 'https://${ServerlessHttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}'

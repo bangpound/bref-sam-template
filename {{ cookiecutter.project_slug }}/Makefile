@@ -16,8 +16,6 @@ deploy: build validate
 artifact:
 	mkdir -p php/conf.d
 	echo "extension=intl" > php/conf.d/php.ini
-	rm .env
-	echo "<?php return [];" > .env.local.php
 	bin/console cache:clear --env=prod
 	bin/console cache:warmup --env=prod
 
@@ -28,4 +26,4 @@ protobuild:
 
 build-ConsoleFunction: protobuild
 
-build-HelloWorldFunction: protobuild
+build-WebFunction: protobuild
